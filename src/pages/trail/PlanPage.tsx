@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import {
   useGetTrailAgentsQuery,
@@ -10,7 +10,7 @@ import { Alert, Badge, Button, ProgressBar } from '@/design-system'
 import { apiErrorMessage } from '@/lib/apiError'
 import { useAppSelector } from '@/store/hooks'
 import { AgentCorner } from './AgentOffice'
-import { TrailShell } from './components'
+import { Facts, Section, TrailShell } from './components'
 import { CHEGADA, L } from './labels'
 import type { TrailActivity, TrailPlan, TrailPlanContent } from './types'
 
@@ -48,32 +48,6 @@ function Generating() {
         <ProgressBar label={text} value={value} valueText="" />
       </div>
     </div>
-  )
-}
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="plan-section">
-      <h2 className="ds-h3" style={{ margin: 0 }}>
-        {title}
-      </h2>
-      {children}
-    </section>
-  )
-}
-
-function Facts({ items }: { items: [string, string][] }) {
-  return (
-    <dl className="plan-facts">
-      {items
-        .filter(([, value]) => value)
-        .map(([label, value]) => (
-          <div key={label}>
-            <dt>{label}</dt>
-            <dd>{value}</dd>
-          </div>
-        ))}
-    </dl>
   )
 }
 

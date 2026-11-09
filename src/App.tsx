@@ -21,6 +21,7 @@ import WelcomePage from '@/pages/WelcomePage'
 import JoinPage from '@/pages/JoinPage'
 import TrailPage from '@/pages/trail/TrailPage'
 import StationPage from '@/pages/trail/StationPage'
+import StationDocumentPage from '@/pages/trail/StationDocumentPage'
 import TelaoPage from '@/pages/trail/TelaoPage'
 import PilotPage from '@/pages/trail/PilotPage'
 import PlanPage from '@/pages/trail/PlanPage'
@@ -81,6 +82,7 @@ export default function App() {
           <Route path="/trilha/piloto" element={<PilotPage />} />
           <Route path="/trilha/plano" element={<PlanPage />} />
           <Route path="/trilha/estacao/:n" element={<StationPage />} />
+          <Route path="/trilha/estacao/:n/documento" element={<StationDocumentPage />} />
           <Route element={<RequireOrganizer />}>
           <Route path="/onboarding" element={<OnboardingPage />} />
           <Route element={<RequireOnboardingDone />}>

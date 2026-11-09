@@ -869,6 +869,116 @@
   gap: var(--space-3);
 }
 
+/* Conversa em balões: entrada, aprendizado e fechamento da etapa */
+@keyframes chat-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.chat-enter {
+  animation: chat-enter 0.28s ease-out both;
+}
+.chat-lesson {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface-inverse);
+  color: var(--white-50);
+}
+.chat-lesson__icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--lime-400);
+  color: var(--navy-800);
+}
+.chat-lesson p {
+  margin: 0;
+}
+.chat-lesson__over {
+  color: var(--lime-400);
+  font: 700 12px/16px var(--font-sans);
+  letter-spacing: 0.5px;
+}
+.chat-lesson__title {
+  font: 700 16px/22px var(--font-sans);
+}
+.chat-lesson__text {
+  font: 400 15px/22px var(--font-sans);
+  overflow-wrap: anywhere;
+}
+.conv-seal {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.conv-seal p {
+  margin: 0;
+}
+.conv-seal__mark {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--lime-400);
+  color: var(--navy-800);
+}
+.conv-seal__title {
+  font: 800 20px/26px var(--font-sans);
+}
+.conv-recap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.conv-recap__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-1) 0 0;
+}
+.conv-recap__list dt {
+  color: var(--text-subtle);
+  font: 700 13px/18px var(--font-sans);
+}
+.conv-recap__list dd {
+  margin: 0;
+  font: 400 15px/22px var(--font-sans);
+  overflow-wrap: anywhere;
+}
+.conv-recap__lessons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.conv-recap__lessons li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font: 600 14px/20px var(--font-sans);
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-enter {
+    animation: none;
+  }
+}
+
 /* Plano de 90 dias */
 .plan {
   display: flex;
@@ -991,6 +1101,12 @@ ul.plan-steps {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
+}
+.plan-download {
+  display: block;
+}
+.plan-result {
+  overflow-x: auto;
 }
 .plan-progress {
   display: flex;

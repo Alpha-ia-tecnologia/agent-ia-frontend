@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import remarkGfm from 'remark-gfm'
@@ -32,35 +33,122 @@ import type {
 } from './types'
 
 const ATTACH_MS = 900
-const FIRST_MESSAGE_MS = 900
+/** Mensagens com mais parágrafos que isso (resultados longos) ficam em um balão só. */
+const MAX_BUBBLES_PER_MESSAGE = 6
+const FIRST_BUBBLE_MS = 700
+const BASE_BUBBLE_MS = 450
+const MS_PER_CHAR = 13
+const MAX_BUBBLE_MS = 2400
 const GUIDE_NAME = 'Guia da Trilha'
 const SESSION_POLL_MS = 15000
 const MURAL_POLL_MS = 8000
 const isDesktop = () => window.matchMedia('(min-width: 1024px)').matches
 
-function Message({ message }: { message: TrailMessage }) {
+interface Bubble {
+  key: string
+  message: TrailMessage
+  text: string
+}
+
+/** Cada parágrafo do Guia vira um balão, como em uma conversa de verdade. */
+function toBubbles(messages: TrailMessage[]): Bubble[] {
+  return messages.flatMap((message) => {
+    const parts =
+      message.role === 'assistant'
+        ? message.content
+            .split(/\n{2,}/)
+            .map((p) => p.trim())
+            .filter(Boolean)
+        : []
+    if (parts.length < 2 || parts.length > MAX_BUBBLES_PER_MESSAGE) {
+      return [{ key: message.id, message, text: message.content }]
+    }
+    return parts.map((text, i) => ({ key: `${message.id}-${i}`, message, text }))
+  })
+}
+
+/** Tempo para ler o balão anterior antes de o próximo chegar. */
+function bubbleDelay(previous: Bubble | undefined) {
+  if (!previous || previous.message.role === 'user') return FIRST_BUBBLE_MS
+  return Math.min(MAX_BUBBLE_MS, BASE_BUBBLE_MS + previous.text.length * MS_PER_CHAR)
+}
+
+function ChatBubble({ bubble, showWho, fresh }: { bubble: Bubble; showWho: boolean; fresh: boolean }) {
+  const { message, text } = bubble
+  const enter = fresh ? ' chat-enter' : ''
   if (message.role === 'event') {
     return (
-      <div className="chat-event">
+      <div className={`chat-event${enter}`}>
         <Icon name="file" size={16} />
-        {message.content}
+        {text}
       </div>
+    )
+  }
+  if (message.role === 'lesson') {
+    return (
+      <aside className={`chat-lesson${enter}`}>
+        <span className="chat-lesson__icon">
+          <Icon name="lightbulb" size={18} />
+        </span>
+        <div>
+          <p className="chat-lesson__over">Para levar com você</p>
+          <p className="chat-lesson__title">{message.authorName}</p>
+          <p className="chat-lesson__text">{text}</p>
+        </div>
+      </aside>
     )
   }
   if (message.role === 'assistant') {
     return (
-      <div className="bubble bubble--ia">
-        <div className="bubble__who">
-          <Badge tone="ia">IA</Badge>
-          {message.authorName}
-        </div>
+      <div className={`bubble bubble--ia${enter}`}>
+        {showWho && (
+          <div className="bubble__who">
+            <Badge tone="ia">IA</Badge>
+            {message.authorName}
+          </div>
+        )}
         <div className="prose-chat bubble__md">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
         </div>
       </div>
     )
   }
-  return <div className="bubble bubble--me">{message.content}</div>
+  return <div className={`bubble bubble--me${enter}`}>{text}</div>
+}
+
+function Recap({ recap }: { recap: TrailSession['recap'] }) {
+  const lessons = recap.flatMap((r) => (r.lesson ? [r.lesson] : []))
+  const built = recap.filter((r) => r.note)
+  return (
+    <div className="conv-recap">
+      {built.length > 0 && (
+        <div>
+          <p className="ds-overline">O que você construiu</p>
+          <dl className="conv-recap__list">
+            {built.map((r) => (
+              <div key={r.title}>
+                <dt>{r.title}</dt>
+                <dd>{r.note}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
+      {lessons.length > 0 && (
+        <div>
+          <p className="ds-overline">O que você leva</p>
+          <ul className="conv-recap__lessons">
+            {lessons.map((l) => (
+              <li key={l}>
+                <Icon name="check-circle" size={16} />
+                {l}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
 }
 
 function Typing({ who }: { who: string }) {
@@ -218,7 +306,9 @@ function Workspace({
   const [sent, setSent] = useState<{ text: string; count: number } | null>(null)
   const [attaching, setAttaching] = useState<{ id: string; value: number } | null>(null)
   const [showDocument, setShowDocument] = useState(false)
-  const [revealed, setRevealed] = useState(false)
+  const [shown, setShown] = useState<number | null>(null)
+  const firstNew = useRef(0)
+  const calm = useReducedMotion()
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const promptLoaded = useRef(false)
 
@@ -230,16 +320,30 @@ function Workspace({
   const messageCount = session?.messages.length ?? 0
   const isFresh = messageCount === 1 && session?.messages[0].role === 'assistant'
 
-  // a primeira mensagem chega como em uma conversa, depois de um instante
+  const bubbles = toBubbles(session?.messages ?? [])
+  const total = bubbles.length
+  const revealing = shown === null || shown < total
+  const nextBubble = shown === null ? undefined : bubbles[shown]
+
+  // ao abrir, o que já foi lido aparece de uma vez; só a conversa nova chega aos poucos
   useEffect(() => {
-    if (!session) return
-    if (!isFresh) {
-      setRevealed(true)
+    if (!session || shown !== null) return
+    const start = isFresh ? 0 : total
+    firstNew.current = start
+    setShown(start)
+  }, [session, shown, isFresh, total])
+
+  // os balões novos chegam um a um, no ritmo de leitura
+  useEffect(() => {
+    if (shown === null || shown >= total) return
+    const role = bubbles[shown].message.role
+    if (calm || role === 'user' || role === 'event') {
+      setShown(shown + 1)
       return
     }
-    const timer = setTimeout(() => setRevealed(true), FIRST_MESSAGE_MS)
+    const timer = setTimeout(() => setShown(shown + 1), bubbleDelay(bubbles[shown - 1]))
     return () => clearTimeout(timer)
-  }, [isFresh, session])
+  }, [shown, total, calm])
 
   // a própria mensagem fica na tela até a resposta do servidor chegar
   useEffect(() => {
@@ -263,11 +367,11 @@ function Workspace({
   }, [draft, session?.phase])
 
   useEffect(() => {
-    if (!revealed || tab !== 'chat') return
+    if (shown === null || tab !== 'chat') return
     const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     // o campo de resposta é o último item da página: a última mensagem fica logo acima dele
     window.scrollTo({ top: document.documentElement.scrollHeight, behavior: calm ? 'auto' : 'smooth' })
-  }, [messageCount, sent, working, revealed, session?.phase, tab])
+  }, [messageCount, sent, working, shown, session?.phase, tab])
 
   useEffect(() => {
     if (tab === 'mural') window.scrollTo({ top: 0 })
@@ -311,7 +415,7 @@ function Workspace({
 
   async function send(text: string) {
     const content = text.trim()
-    if (!content || working) return
+    if (!content || working || revealing) return
     setDraft('')
     setSent({ text: content, count: messageCount })
     try {
@@ -351,7 +455,11 @@ function Workspace({
   const current = session.steps.find((s) => s.status === 'current')
   const typingWho =
     current?.key === 'solucao' && station?.specialist ? station.specialist : GUIDE_NAME
-  const showOptions = revealed && canType && !working && session.options.length > 0
+  const showOptions = !revealing && canType && !working && session.options.length > 0
+  const firstReveal = shown === null || (isFresh && revealing)
+  const typingName =
+    nextBubble?.message.role === 'assistant' ? (nextBubble.message.authorName ?? typingWho) : typingWho
+  const isTyping = working || (nextBubble?.message.role === 'assistant' && !pendingEcho)
   const next = nextOf(stageNumber)
   const noteCount = mural?.notes.length ?? 0
   const placeLabel = isTrailStation ? `${L.station} ${stageNumber} de ${TOTAL}` : session.stage.title
@@ -406,11 +514,17 @@ function Workspace({
       <div className="conv-grid" data-tab={tab}>
         <section className="conv-chat" aria-label="Minha conversa">
           <div className="conv-log" aria-live="polite">
-            {!revealed && <Typing who={GUIDE_NAME} />}
-            {revealed && session.messages.map((m) => <Message key={m.id} message={m} />)}
+            {bubbles.slice(0, shown ?? 0).map((bubble, i) => {
+              const before = bubbles[i - 1]
+              const sameAuthor =
+                before?.message.role === 'assistant' && before.message.authorName === bubble.message.authorName
+              return (
+                <ChatBubble key={bubble.key} bubble={bubble} showWho={!sameAuthor} fresh={i >= firstNew.current} />
+              )
+            })}
             {pendingEcho && <div className="bubble bubble--me">{pendingEcho}</div>}
-            {working && <Typing who={typingWho} />}
-            {session.phase === 'attach' && !working && (
+            {isTyping && <Typing who={typingName} />}
+            {session.phase === 'attach' && !working && !revealing && (
               <DocumentOptions
                 label={session.attachLabel}
                 documents={session.documents}
@@ -419,13 +533,42 @@ function Workspace({
                 onAttach={startAttach}
               />
             )}
-            {session.completed && (
-              <div className="conv-done">
+            {session.completed && !revealing && (
+              <motion.div
+                className="conv-done"
+                initial={calm ? false : { opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35 }}
+              >
+                {!isLargada && (
+                  <div className="conv-seal">
+                    <motion.span
+                      className="conv-seal__mark"
+                      initial={calm ? false : { scale: 0.4 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: 'spring', stiffness: 320, damping: 16, delay: 0.1 }}
+                    >
+                      <Icon name="check" size={24} />
+                    </motion.span>
+                    <div>
+                      <p className="ds-overline">{placeLabel}</p>
+                      <p className="conv-seal__title">{isChegada ? 'Você chegou ao fim da trilha' : 'Etapa vencida'}</p>
+                    </div>
+                  </div>
+                )}
                 {session.idea && (
                   <div className="conv-idea">
                     <p className="ds-overline">Ideia anotada no mural</p>
                     <p className="conv-idea__text">{session.idea}</p>
                   </div>
+                )}
+                {session.recap.length > 0 && <Recap recap={session.recap} />}
+                {isTrailStation && (
+                  <Link to={`/trilha/estacao/${stageNumber}/documento`}>
+                    <Button variant="secondary" icon="download" fullWidth>
+                      Ver o documento da {L.station.toLowerCase()}
+                    </Button>
+                  </Link>
                 )}
                 {isTrailStation && <TableProgress table={session.table} />}
                 <Link to={next.to}>
@@ -433,11 +576,11 @@ function Workspace({
                     {next.label}
                   </Button>
                 </Link>
-              </div>
+              </motion.div>
             )}
           </div>
 
-          {canType && revealed && (
+          {canType && !firstReveal && (
             <form className="conv-composer" onSubmit={onSubmit}>
               {session.phase === 'prompt' && (
                 <p className="conv-hint">
@@ -476,7 +619,7 @@ function Workspace({
                   variant="primary"
                   icon="send"
                   aria-label={session.phase === 'prompt' ? 'Enviar o prompt' : 'Enviar resposta'}
-                  disabled={!draft.trim() || working}
+                  disabled={!draft.trim() || working || revealing}
                 />
               </div>
               <p className="conv-privacy">Não escreva dados pessoais nem sigilosos.</p>

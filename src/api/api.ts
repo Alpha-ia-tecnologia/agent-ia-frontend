@@ -9,6 +9,7 @@ import type {
   TrailPlan,
   TrailPublicVote,
   TrailSession,
+  TrailStationDocument,
   TrailSheetEntry,
   TrailState,
   TrailStation,
@@ -432,6 +433,9 @@ export const api = createApi({
     editTrailSheet: build.mutation<TrailPilot, { field: string; value: string }>({
       query: (body) => ({ url: '/trail/pilot/sheet', method: 'POST', body }),
       invalidatesTags: ['TrailPilot'],
+    }),
+    getTrailStationDocument: build.query<TrailStationDocument, number>({
+      query: (station) => `/trail/stations/${station}/document`,
     }),
     getTrailPlan: build.query<TrailPlan, void>({
       query: () => '/trail/plan',
@@ -1249,6 +1253,7 @@ export const {
   useVoteTrailPilotMutation,
   useCloseTrailPilotMutation,
   useEditTrailSheetMutation,
+  useGetTrailStationDocumentQuery,
   useGetTrailPlanQuery,
   useStartTrailPlanMutation,
   useGetTrailVoteQuery,

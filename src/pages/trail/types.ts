@@ -43,7 +43,7 @@ export interface TrailState {
 
 export interface TrailMessage {
   id: string
-  role: 'user' | 'assistant' | 'event'
+  role: 'user' | 'assistant' | 'event' | 'lesson'
   authorName: string | null
   content: string
 }
@@ -88,6 +88,8 @@ export interface TrailSession {
   busy: boolean
   completed: boolean
   idea: string | null
+  /** o que a pessoa construiu e aprendeu nesta etapa, ao concluir */
+  recap: { title: string; note: string | null; lesson: string | null }[]
   table: TrailTable
   messages: TrailMessage[]
 }
@@ -178,6 +180,21 @@ export interface TrailPlanContent {
   trilha: { estacao: string; aproveitamento: string }[]
   conexaoPiloto: string
   aConferir: string[]
+}
+
+export interface TrailStationDocument {
+  station: number
+  title: string
+  question: string
+  care: string
+  name: string
+  department: string | null
+  tableName: string
+  completedAt: string
+  material: string | null
+  steps: { title: string; note: string }[]
+  result: string | null
+  lessons: { title: string; text: string }[]
 }
 
 export interface TrailPlan {

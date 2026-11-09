@@ -5,6 +5,32 @@ import { CHEGADA, L } from './labels'
 import type { TrailStation } from './types'
 import './trail.css'
 
+export function Section({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="plan-section">
+      <h2 className="ds-h3" style={{ margin: 0 }}>
+        {title}
+      </h2>
+      {children}
+    </section>
+  )
+}
+
+export function Facts({ items }: { items: [string, string][] }) {
+  return (
+    <dl className="plan-facts">
+      {items
+        .filter(([, value]) => value)
+        .map(([label, value]) => (
+          <div key={label}>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+    </dl>
+  )
+}
+
 /** Mesmas cores das estações usadas nos slides do seminário. */
 const STATION_COLORS: Record<number, string> = {
   1: 'var(--yellow-400)',
