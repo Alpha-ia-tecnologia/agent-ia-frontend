@@ -315,7 +315,6 @@ export const api = createApi({
     'TrailPilot',
     'TrailPlan',
     'TrailVote',
-    'EventEntry',
   ],
   endpoints: (build) => ({
     // Auth
@@ -363,14 +362,6 @@ export const api = createApi({
     }),
     enterEvent: build.mutation<AuthResponse, { name: string }>({
       query: (body) => ({ url: '/invites/evento/enter', method: 'POST', body }),
-    }),
-    getEventEntry: build.query<{ open: boolean }, void>({
-      query: () => '/org/invites/evento',
-      providesTags: ['EventEntry'],
-    }),
-    setEventEntry: build.mutation<{ open: boolean }, { open: boolean }>({
-      query: (body) => ({ url: '/org/invites/evento', method: 'POST', body }),
-      invalidatesTags: ['EventEntry'],
     }),
     enterWithCode: build.mutation<AuthResponse, { code: string; name: string }>({
       query: ({ code, name }) => ({
@@ -946,14 +937,6 @@ export const api = createApi({
       query: (body) => ({ url: '/channels/email', method: 'POST', body }),
       invalidatesTags: ['Channel'],
     }),
-    setProviderKeyFallback: build.mutation<unknown, { id: string; priority: number }>({
-      query: ({ id, priority }) => ({
-        url: `/provider-keys/${id}/fallback`,
-        method: 'PATCH',
-        body: { priority },
-      }),
-      invalidatesTags: ['ProviderKey'],
-    }),
     createWhatsAppChannel: build.mutation<Channel, { agentId?: string }>({
       query: (body) => ({ url: '/channels/whatsapp', method: 'POST', body }),
       invalidatesTags: ['Channel'],
@@ -1103,20 +1086,6 @@ export const api = createApi({
       query: () => '/provider-keys',
       providesTags: ['ProviderKey'],
     }),
-    createProviderKey: build.mutation<
-      ProviderKey,
-      { provider: string; apiKey: string; label: string; baseUrl?: string; defaultModel?: string }
-    >({
-      query: (body) => ({ url: '/provider-keys', method: 'POST', body }),
-      invalidatesTags: ['ProviderKey'],
-    }),
-    deleteProviderKey: build.mutation<void, string>({
-      query: (id) => ({ url: `/provider-keys/${id}`, method: 'DELETE' }),
-      invalidatesTags: ['ProviderKey'],
-    }),
-    testProviderKey: build.mutation<{ ok: boolean }, string>({
-      query: (id) => ({ url: `/provider-keys/${id}/test`, method: 'POST' }),
-    }),
 
     // Onboarding
     getUserAgentAccess: build.query<string[], string>({
@@ -1265,8 +1234,6 @@ export const {
   usePreviewInviteQuery,
   useAcceptInviteMutation,
   useEnterEventMutation,
-  useGetEventEntryQuery,
-  useSetEventEntryMutation,
   useEnterWithCodeMutation,
   useGetTrailStationsQuery,
   useGetTrailAgentsQuery,
@@ -1337,7 +1304,6 @@ export const {
   useCreateTelegramChannelMutation,
   useCreateEmailChannelMutation,
   useCreateWhatsAppChannelMutation,
-  useSetProviderKeyFallbackMutation,
   useLazyGetWhatsAppStatusQuery,
   useUpdateChannelMutation,
   useGetInboxContactsQuery,
@@ -1402,9 +1368,6 @@ export const {
   useUpdateUserMutation,
   useDeleteUserMutation,
   useGetProviderKeysQuery,
-  useCreateProviderKeyMutation,
-  useDeleteProviderKeyMutation,
-  useTestProviderKeyMutation,
   useGenerateOfficeMutation,
   useConfirmOfficeMutation,
   useGetConversationsQuery,

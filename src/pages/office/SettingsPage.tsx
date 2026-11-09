@@ -6,10 +6,6 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import {
   useDeleteAccountMutation,
-  useCreateProviderKeyMutation,
-  useDeleteProviderKeyMutation,
-  useGetProviderKeysQuery,
-  useTestProviderKeyMutation,
   useGetConnectorsQuery,
   useCreateConnectorMutation,
   useRevokeConnectorMutation,
@@ -40,7 +36,7 @@ import {
   cx,
 } from '@/components/ui'
 
-type Tab = 'providers' | 'connector' | 'channels' | 'account'
+type Tab = 'connector' | 'channels' | 'account'
 
 const settingsIcon = 'h-4 w-4 shrink-0'
 function GearIcon({ className }: { className?: string }) {
@@ -48,14 +44,6 @@ function GearIcon({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className ?? 'h-5 w-5'}>
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
-    </svg>
-  )
-}
-function KeyIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className ?? settingsIcon}>
-      <circle cx="7.5" cy="15.5" r="4.5" />
-      <path d="m10.5 12.5 8-8M17 3l3 3-3 3M15 5l2 2" />
     </svg>
   )
 }
@@ -86,13 +74,12 @@ function UserIcon({ className }: { className?: string }) {
 export default function SettingsPage() {
   const [tab, setTab] = useState<Tab>(() => {
     const t = new URLSearchParams(window.location.search).get('tab')
-    return (['providers', 'connector', 'channels', 'account'].includes(t ?? '')
+    return (['connector', 'channels', 'account'].includes(t ?? '')
       ? (t as Tab)
-      : 'providers')
+      : 'connector')
   })
 
   const tabs = [
-    { key: 'providers', label: 'Inteligência artificial', Icon: KeyIcon },
     { key: 'connector', label: 'Conector local', Icon: LaptopIcon },
     { key: 'channels', label: 'Conexões', Icon: ChatIcon },
     { key: 'account', label: 'Conta', Icon: UserIcon },
@@ -107,7 +94,7 @@ export default function SettingsPage() {
           </span>
           <div className="min-w-0">
             <h1 className="text-xl font-semibold leading-tight">Configurações</h1>
-            <p className="mt-1 text-sm text-ink-2">Provedores de IA, conector local, conexões e sua conta.</p>
+            <p className="mt-1 text-sm text-ink-2">Conector local, conexões e sua conta.</p>
           </div>
         </header>
 
@@ -131,139 +118,11 @@ export default function SettingsPage() {
         </div>
 
         <div className="pt-6">
-          {tab === 'providers' && <ProvidersTab />}
           {tab === 'connector' && <ConnectorTab />}
           {tab === 'channels' && <ChannelsTab />}
           {tab === 'account' && <AccountTab />}
         </div>
       </div>
-    </div>
-  )
-}
-
-/* ---------- Inteligência artificial ---------- */
-
-const AI_MODEL = { id: 'claude-sonnet-5-5', label: 'Claude Sonnet 5.5' }
-
-function ProvidersTab() {
-  const { data: keys, isLoading } = useGetProviderKeysQuery()
-  const [createKey, { isLoading: creating }] = useCreateProviderKeyMutation()
-  const [deleteKey] = useDeleteProviderKeyMutation()
-  const [testKey] = useTestProviderKeyMutation()
-  const [modalOpen, setModalOpen] = useState(false)
-  const [testingId, setTestingId] = useState<string | null>(null)
-  const [apiKey, setApiKey] = useState('')
-
-  async function onCreate(e: FormEvent) {
-    e.preventDefault()
-    try {
-      await createKey({
-        provider: 'anthropic',
-        apiKey,
-        label: 'Anthropic',
-        defaultModel: AI_MODEL.id,
-      }).unwrap()
-      toast.success('Chave adicionada.')
-      setModalOpen(false)
-      setApiKey('')
-    } catch (err) {
-      toast.error(apiErrorMessage(err, 'Não foi possível adicionar a chave.'))
-    }
-  }
-
-  async function onTest(id: string) {
-    setTestingId(id)
-    try {
-      const res = await testKey(id).unwrap()
-      if (res.ok) toast.success('Chave válida.')
-      else toast.error('A chave não passou no teste.')
-    } catch (err) {
-      toast.error(apiErrorMessage(err, 'Falha ao testar a chave.'))
-    } finally {
-      setTestingId(null)
-    }
-  }
-
-  return (
-    <div>
-      <p className="mb-4 text-sm leading-relaxed text-ink-2">
-        Os agentes da trilha usam a API da Anthropic com o modelo{' '}
-        <strong className="text-ink">{AI_MODEL.label}</strong>. A chave definida em{' '}
-        <code>ANTHROPIC_API_KEY</code>, no .env do servidor, tem prioridade sobre a cadastrada aqui.
-      </p>
-
-      {isLoading && <Skeleton className="h-32 w-full rounded-xl" />}
-
-      {keys?.length === 0 && (
-        <EmptyState
-          title="Nenhuma chave cadastrada"
-          description="Adicione a chave da API da Anthropic para os agentes responderem."
-          action={<Button onClick={() => setModalOpen(true)}>Adicionar chave</Button>}
-        />
-      )}
-
-      {keys && keys.length > 0 && (
-        <div className="divide-y divide-line rounded-xl border border-line">
-          {keys.map((k) => (
-            <div key={k.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3">
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium">{k.label}</span>
-                <span className="block truncate font-mono text-[12px] text-ink-3">{k.maskedKey}</span>
-              </span>
-              <Badge>{AI_MODEL.label}</Badge>
-              <span className="flex basis-full items-center justify-end gap-1 sm:ml-auto sm:basis-auto">
-                <Button variant="ghost" className="h-8 px-2.5 text-[13px]" onClick={() => onTest(k.id)} disabled={testingId === k.id}>
-                  {testingId === k.id ? <Spinner /> : 'Testar'}
-                </Button>
-                <Button
-                  variant="danger"
-                  className="h-8 px-2.5 text-[13px]"
-                  onClick={async () => {
-                    try {
-                      await deleteKey(k.id).unwrap()
-                      toast.success('Chave removida.')
-                    } catch (err) {
-                      toast.error(apiErrorMessage(err))
-                    }
-                  }}
-                >
-                  Remover
-                </Button>
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <Modal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="Adicionar chave da Anthropic"
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setModalOpen(false)}>Cancelar</Button>
-            <Button type="submit" form="provider-key-form" disabled={creating}>
-              {creating ? <Spinner className="border-t-paper border-paper/40" /> : 'Adicionar'}
-            </Button>
-          </>
-        }
-      >
-        <form id="provider-key-form" onSubmit={onCreate} className="space-y-4">
-          <Field label="Chave da API">
-            <Input
-              required
-              type="password"
-              autoComplete="off"
-              placeholder="sk-ant-..."
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-            />
-          </Field>
-          <Field label="Modelo">
-            <Input value={AI_MODEL.label} disabled readOnly />
-          </Field>
-        </form>
-      </Modal>
     </div>
   )
 }

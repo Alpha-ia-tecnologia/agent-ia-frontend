@@ -3,14 +3,12 @@ import { Link } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
 import { toast } from 'sonner'
 import {
-  useGetEventEntryQuery,
   useGetTrailActivityQuery,
   useGetTrailAgentsQuery,
   useGetTrailBoardQuery,
   useGetTrailStationsQuery,
   useReleaseTrailRoomMutation,
   useReleaseTrailRunMutation,
-  useSetEventEntryMutation,
   useSetTrailChegadaOpenMutation,
   useSetTrailPilotOpenMutation,
   useSetTrailVoteOpenMutation,
@@ -34,67 +32,25 @@ const PILOT_STATUS: Record<BoardRun['pilotStatus'], string> = {
   ready: 'Pronto',
 }
 
-/** Controle da entrada só com o nome. */
-function useEntryControl() {
-  const { data } = useGetEventEntryQuery()
-  const [setEntry, { isLoading: busy }] = useSetEventEntryMutation()
-
-  async function change(open: boolean) {
-    try {
-      await setEntry({ open }).unwrap()
-    } catch (err) {
-      toast.error(apiErrorMessage(err, 'Não foi possível alterar a entrada. Tente de novo.'))
-    }
-  }
-
-  return {
-    loaded: !!data,
-    isOpen: !!data?.open,
-    busy,
-    openEntry: () => change(true),
-    closeEntry: () => change(false),
-  }
-}
-
-function EntryModal({
-  open,
-  onClose,
-  entry,
-}: {
-  open: boolean
-  onClose: () => void
-  entry: ReturnType<typeof useEntryControl>
-}) {
+function EntryModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
     <Modal open={open} title="Entrada de participantes" onClose={onClose} size="md">
-      {entry.isOpen ? (
-        <div className="telao-qr">
-          <div className="telao-qr__box">
-            <QRCodeSVG
-              value={`${window.location.origin}/login`}
-              size={260}
-              level="M"
-              style={{ display: 'block', width: '100%', maxWidth: 260, height: 'auto' }}
-            />
-          </div>
-          <p className="ds-h3" style={{ margin: 0 }}>
-            Leia o QR code ou acesse {window.location.host}
-          </p>
-          <p className="ds-small ds-muted" style={{ margin: 0 }}>
-            A pessoa digita o nome e entra automaticamente em uma mesa.
-          </p>
-          <Button variant="secondary" loading={entry.busy} onClick={() => void entry.closeEntry()}>
-            Encerrar entrada
-          </Button>
+      <div className="telao-qr">
+        <div className="telao-qr__box">
+          <QRCodeSVG
+            value={`${window.location.origin}/login`}
+            size={260}
+            level="M"
+            style={{ display: 'block', width: '100%', maxWidth: 260, height: 'auto' }}
+          />
         </div>
-      ) : (
-        <div className="stack-sm">
-          <p style={{ margin: 0 }}>A entrada está fechada. Ninguém novo consegue entrar.</p>
-          <Button variant="primary" loading={entry.busy} onClick={() => void entry.openEntry()}>
-            Abrir entrada
-          </Button>
-        </div>
-      )}
+        <p className="ds-h3" style={{ margin: 0 }}>
+          Leia o QR code ou acesse {window.location.host}
+        </p>
+        <p className="ds-small ds-muted" style={{ margin: 0 }}>
+          A pessoa digita o nome e entra automaticamente em uma mesa.
+        </p>
+      </div>
     </Modal>
   )
 }
@@ -129,7 +85,6 @@ export default function TelaoPage() {
   const [releaseRoom, { isLoading: releasing }] = useReleaseTrailRoomMutation()
   const [upTo, setUpTo] = useState('')
   const [showEntry, setShowEntry] = useState(false)
-  const entry = useEntryControl()
   const [setPilotOpen, { isLoading: pilotBusy }] = useSetTrailPilotOpenMutation()
   const [setVoteOpen, { isLoading: voteBusy }] = useSetTrailVoteOpenMutation()
   const [setChegadaOpen, { isLoading: chegadaBusy }] = useSetTrailChegadaOpenMutation()
@@ -191,23 +146,9 @@ export default function TelaoPage() {
 
   return (
     <TrailShell {...shell}>
-      {entry.loaded && !entry.isOpen && (
-        <Alert
-          tone="info"
-          title="A entrada de participantes está fechada"
-          action={
-            <Button variant="primary" size="sm" loading={entry.busy} onClick={() => void entry.openEntry()}>
-              Abrir entrada
-            </Button>
-          }
-        >
-          Abra a entrada para as pessoas conseguirem participar só com o nome.
-        </Alert>
-      )}
-
       {!board.aiReady && (
         <Alert tone="warning" title="A IA ainda não está conectada">
-          Cadastre a chave da API da Anthropic em Configurações para o Guia atender as mesas.
+          Confira a variável ANTHROPIC_API_KEY no servidor para o Guia atender as mesas.
         </Alert>
       )}
 
@@ -336,7 +277,7 @@ export default function TelaoPage() {
         ]}
       />
 
-      <EntryModal open={showEntry} onClose={() => setShowEntry(false)} entry={entry} />
+      <EntryModal open={showEntry} onClose={() => setShowEntry(false)} />
     </TrailShell>
   )
 }

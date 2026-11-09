@@ -246,7 +246,7 @@ function ConfigTab({ agent }: { agent: Agent }) {
                   label="Provedor"
                   hint={
                     providerOptions.length === 0
-                      ? 'Conecte uma assinatura ou cadastre uma chave em Configurações → Provedores.'
+                      ? 'A IA é configurada no servidor.'
                       : subSelected
                         ? 'Assinatura ativa da empresa — usada pelos agentes.'
                         : undefined
