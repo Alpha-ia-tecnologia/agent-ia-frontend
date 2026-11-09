@@ -4,8 +4,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-# URL da API embutida no build (variável de build, não de runtime)
-ARG VITE_API_URL
+# URL da API embutida no build (variável de build, não de runtime).
+# O valor padrão vale quando o painel não repassa a variável ao build.
+ARG VITE_API_URL=https://agentes-ia-projeto-prefeitura-agente-backend.gkgtsp.easypanel.host/api
 ENV VITE_API_URL=${VITE_API_URL}
 # manifest dos executáveis desktop (MinIO); sem ela o botão de download some
 ARG VITE_RELEASES_MANIFEST_URL
