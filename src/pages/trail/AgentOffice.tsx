@@ -6,6 +6,8 @@ import type { OfficeAgent, TrailActivity } from './types'
 import './office.css'
 
 const ORCHESTRATOR = 'orquestrador'
+/** No telão, com centenas de ações, poucos cartões voando já contam a história. */
+const MAX_FLIGHTS_PER_UPDATE = 5
 
 type DeskState = 'idle' | 'routing' | 'working' | 'done'
 
@@ -112,7 +114,7 @@ export function AgentOffice({
       if (a.agentSlug === ORCHESTRATOR || dispatched.current.has(a.id)) continue
       dispatched.current.add(a.id)
       const target = desks.current.get(a.agentSlug)?.getBoundingClientRect()
-      if (target) {
+      if (target && created.length < MAX_FLIGHTS_PER_UPDATE) {
         created.push({
           id: a.id,
           label: `${L.station} ${a.station}`,

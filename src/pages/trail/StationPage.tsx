@@ -34,6 +34,8 @@ import type {
 const ATTACH_MS = 900
 const FIRST_MESSAGE_MS = 900
 const GUIDE_NAME = 'Guia da Trilha'
+const SESSION_POLL_MS = 15000
+const MURAL_POLL_MS = 8000
 const isDesktop = () => window.matchMedia('(min-width: 1024px)').matches
 
 function Message({ message }: { message: TrailMessage }) {
@@ -202,8 +204,13 @@ function Workspace({
   station: TrailStation | undefined
   run: TrailRun
 }) {
-  const { data: session } = useGetTrailSessionQuery(stageNumber, { pollingInterval: 8000 })
-  const { data: mural } = useGetTrailMuralQuery(stageNumber, { pollingInterval: 5000 })
+  const [tab, setTab] = useState<'chat' | 'mural'>('chat')
+  const { data: session } = useGetTrailSessionQuery(stageNumber, { pollingInterval: SESSION_POLL_MS })
+  // no celular o mural só é consultado com a aba aberta: são centenas de aparelhos
+  const { data: mural } = useGetTrailMuralQuery(stageNumber, {
+    skip: tab !== 'mural' && !isDesktop(),
+    pollingInterval: MURAL_POLL_MS,
+  })
   const { data: agents = [] } = useGetTrailAgentsQuery()
   const [attach, { isLoading: analyzing }] = useAttachTrailDocumentMutation()
   const [answer, { isLoading: answering }] = useAnswerTrailStepMutation()
@@ -211,14 +218,13 @@ function Workspace({
   const [sent, setSent] = useState<{ text: string; count: number } | null>(null)
   const [attaching, setAttaching] = useState<{ id: string; value: number } | null>(null)
   const [showDocument, setShowDocument] = useState(false)
-  const [tab, setTab] = useState<'chat' | 'mural'>('chat')
   const [revealed, setRevealed] = useState(false)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const promptLoaded = useRef(false)
 
   const working = !!session?.busy || answering || analyzing
   const { data: serverActivities = [] } = useGetTrailActivityQuery(undefined, {
-    pollingInterval: working ? 1200 : isDesktop() ? 3000 : 0,
+    pollingInterval: working ? 2500 : isDesktop() ? 6000 : 0,
   })
 
   const messageCount = session?.messages.length ?? 0
@@ -513,7 +519,7 @@ export default function StationPage() {
   const number = Number(n)
   const userName = useAppSelector((s) => s.auth.user?.name)
   const { data: stations } = useGetTrailStationsQuery()
-  const { data: state, isLoading } = useGetTrailStateQuery(undefined, { pollingInterval: 10000 })
+  const { data: state, isLoading } = useGetTrailStateQuery(undefined, { pollingInterval: 20000 })
 
   if (isLoading || !stations || !state) {
     return (

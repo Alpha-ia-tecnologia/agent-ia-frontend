@@ -98,7 +98,7 @@ export default function TrailPage({ map = false }: { map?: boolean }) {
   const dispatch = useAppDispatch()
   const user = useAppSelector((s) => s.auth.user)
   const { data: stations } = useGetTrailStationsQuery()
-  const { data: state, isLoading } = useGetTrailStateQuery(undefined, { pollingInterval: 5000 })
+  const { data: state, isLoading } = useGetTrailStateQuery(undefined, { pollingInterval: 15000 })
   const [join, { isLoading: joining, error: joinError }] = useJoinTrailMutation()
 
   // o participante já recebe a mesa ao entrar; aqui cobre uma falha nesse passo

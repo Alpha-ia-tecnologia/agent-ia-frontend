@@ -1,7 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import {
-  useGetTrailActivityQuery,
   useGetTrailAgentsQuery,
   useGetTrailPlanQuery,
   useStartTrailPlanMutation,
@@ -13,7 +12,7 @@ import { useAppSelector } from '@/store/hooks'
 import { AgentCorner } from './AgentOffice'
 import { TrailShell } from './components'
 import { CHEGADA, L } from './labels'
-import type { TrailPlan, TrailPlanContent } from './types'
+import type { TrailActivity, TrailPlan, TrailPlanContent } from './types'
 
 /** O que o Guia está fazendo, em ritmo próximo ao tempo real da geração. */
 const PROGRESS = [
@@ -42,7 +41,7 @@ function Generating() {
           O Guia está montando o seu plano
         </h1>
         <p className="ds-small ds-muted" style={{ margin: 0 }}>
-          Leva cerca de um minuto. Pode continuar nesta tela.
+          Leva de um a três minutos. Se você sair desta tela, o plano continua sendo montado.
         </p>
       </div>
       <div className="plan-progress">
@@ -291,14 +290,11 @@ export default function PlanPage() {
   const userName = useAppSelector((s) => s.auth.user?.name)
   const [polling, setPolling] = useState(true)
   const { data, isLoading } = useGetTrailPlanQuery(undefined, {
-    pollingInterval: polling ? 2500 : 0,
+    pollingInterval: polling ? 6000 : 0,
   })
   const [start, { isLoading: starting, error: startError, reset }] = useStartTrailPlanMutation()
   const { data: agents = [] } = useGetTrailAgentsQuery()
   const generating = data?.status === 'generating' || (data?.status === 'none' && starting)
-  const { data: activities = [] } = useGetTrailActivityQuery(undefined, {
-    pollingInterval: generating ? 1500 : 0,
-  })
 
   const status = data?.status
   const needsStart = !!data?.chegadaDone && status === 'none'
@@ -351,11 +347,25 @@ export default function PlanPage() {
     content = <Generating />
   }
 
-  const mine = activities.filter((a) => a.mine && a.action === 'plan')
+  // o Guia aparece trabalhando sem consultar o servidor a cada segundo
+  const working: TrailActivity[] = generating
+    ? [
+        {
+          id: 'plan',
+          runName: data.tableName,
+          station: CHEGADA,
+          action: 'plan',
+          agentSlug: 'orquestrador',
+          agentName: '',
+          phase: 'working',
+          mine: true,
+        },
+      ]
+    : []
   return (
     <TrailShell userName={userName} subtitle={data.tableName}>
       {content}
-      <AgentCorner agents={agents} activities={generating ? mine : []} />
+      <AgentCorner agents={agents} activities={working} />
     </TrailShell>
   )
 }

@@ -200,7 +200,7 @@ function Sheet({ pilot }: { pilot: TrailPilot }) {
 }
 
 function PublicVote() {
-  const { data } = useGetTrailVoteQuery(undefined, { pollingInterval: 6000 })
+  const { data } = useGetTrailVoteQuery(undefined, { pollingInterval: 15000 })
   const [cast, { isLoading }] = useCastTrailVoteMutation()
 
   if (!data?.open || data.options.length === 0) return null
@@ -250,8 +250,8 @@ function PublicVote() {
 
 export default function PilotPage() {
   const userName = useAppSelector((s) => s.auth.user?.name)
-  const { data: pilot, isLoading } = useGetTrailPilotQuery(undefined, { pollingInterval: 4000 })
-  const { data: state } = useGetTrailStateQuery(undefined, { pollingInterval: 10000 })
+  const { data: pilot, isLoading } = useGetTrailPilotQuery(undefined, { pollingInterval: 8000 })
+  const { data: state } = useGetTrailStateQuery(undefined, { pollingInterval: 20000 })
   const [start, { isLoading: starting, error: startError, reset }] = useStartTrailPilotMutation()
 
   const needsStart = !!pilot?.open && pilot.status === 'none'
