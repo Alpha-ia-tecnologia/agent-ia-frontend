@@ -1,0 +1,354 @@
+/* Escritório de agentes: só tokens do design system. */
+.office {
+  position: relative;
+  background: var(--navy-800);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  color: var(--white-50);
+  font-family: var(--font-sans);
+  overflow: hidden;
+}
+.office__title {
+  margin: 0 0 var(--space-4);
+  font: 800 12px/16px var(--font-sans);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--cyan-400);
+}
+.office__floor {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+@media (min-width: 1024px) {
+  .office__floor {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+@media (max-width: 639px) {
+  .office {
+    padding: var(--space-4);
+  }
+  .office__floor {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.office--compact {
+  padding: var(--space-3) var(--space-4);
+}
+.office--compact .office__title {
+  margin-bottom: var(--space-2);
+}
+.office--compact .desk {
+  padding: var(--space-6) var(--space-2) var(--space-2);
+}
+.office--compact .desk-stage {
+  max-width: 104px;
+}
+.office--compact .desk__name {
+  margin-top: var(--space-1);
+  font-size: 12px;
+}
+.office--compact .desk__role {
+  display: none;
+}
+
+/* Mesa */
+.desk {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-8) var(--space-2) var(--space-3);
+  background: var(--navy-700);
+  border-radius: var(--radius-lg);
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+  transition: outline-color 0.25s ease;
+}
+.desk--routing,
+.desk--working {
+  outline-color: var(--ia);
+}
+.desk--done {
+  outline-color: var(--cyan-400);
+}
+.desk__bubble {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  right: var(--space-2);
+  padding: 2px var(--space-2);
+  background: var(--ia);
+  color: var(--on-accent);
+  border-radius: var(--radius-pill);
+  font: 700 12px/16px var(--font-sans);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.desk--done .desk__bubble {
+  background: var(--cyan-400);
+}
+.desk__count {
+  margin-left: var(--space-1);
+  font-weight: 800;
+}
+.desk__name {
+  margin: var(--space-2) 0 0;
+  font: 700 13px/16px var(--font-sans);
+  text-align: center;
+  color: var(--white-50);
+}
+.desk__role {
+  margin: 2px 0 0;
+  font: 500 12px/16px var(--font-sans);
+  text-align: center;
+  color: var(--text-on-inverse-muted);
+}
+
+/* Cena da mesa */
+.desk-stage {
+  position: relative;
+  width: 100%;
+  max-width: 170px;
+  aspect-ratio: 170 / 92;
+}
+.desk-stage__art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.desk-stage__agent {
+  position: absolute;
+  left: 7%;
+  bottom: 26%;
+  width: 34%;
+  transform-origin: 50% 100%;
+}
+.desk-stage__agent img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 50%;
+  background: var(--paper-50);
+}
+.desk-stage__front {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.art-screen {
+  fill: var(--navy-900);
+  transition: fill 0.25s ease;
+}
+.desk--working .art-screen,
+.desk--routing .art-screen {
+  fill: var(--paper-50);
+}
+.art-line {
+  fill: var(--navy-700);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: left center;
+}
+.desk--working .art-line {
+  opacity: 1;
+  animation: art-type 1.5s steps(10) infinite;
+}
+.desk--working .art-line:nth-of-type(2) {
+  animation-delay: 0.3s;
+}
+.desk--working .art-line:nth-of-type(3) {
+  animation-delay: 0.6s;
+}
+.desk--working .art-line:nth-of-type(4) {
+  animation-delay: 0.9s;
+}
+.desk--working .desk-stage__agent {
+  animation: agent-typing 0.32s ease-in-out infinite alternate;
+}
+.art-hand {
+  fill: var(--paper-50);
+  opacity: 0;
+  transform-box: fill-box;
+}
+.desk--working .art-hand {
+  opacity: 1;
+  animation: hand-tap 0.22s ease-in-out infinite alternate;
+}
+.desk--working .art-hand--right {
+  animation-delay: 0.11s;
+}
+.art-paper {
+  fill: var(--paper-50);
+  transform-box: fill-box;
+}
+.desk--routing .art-paper {
+  animation: paper-shuffle 0.5s ease-in-out infinite alternate;
+}
+.desk--routing .art-paper--top {
+  animation-delay: 0.15s;
+}
+.desk--routing .desk-stage__agent {
+  animation: agent-look 0.9s ease-in-out infinite alternate;
+}
+.desk-stage__agent {
+  animation: agent-idle 4s ease-in-out infinite alternate;
+}
+.art-check {
+  opacity: 0;
+  stroke: var(--navy-800);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.desk--done .art-screen {
+  fill: var(--cyan-400);
+}
+.desk--done .art-check {
+  animation: check-pop 0.4s ease-out forwards;
+}
+
+@keyframes agent-idle {
+  to {
+    transform: translateY(-1.5%);
+  }
+}
+@keyframes agent-typing {
+  from {
+    transform: translateY(0) rotate(-1.5deg);
+  }
+  to {
+    transform: translateY(3%) rotate(1.5deg);
+  }
+}
+@keyframes agent-look {
+  from {
+    transform: rotate(-6deg);
+  }
+  to {
+    transform: rotate(6deg);
+  }
+}
+@keyframes art-type {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes hand-tap {
+  to {
+    transform: translateY(-2px);
+  }
+}
+@keyframes paper-shuffle {
+  to {
+    transform: translate(3px, -3px) rotate(6deg);
+  }
+}
+@keyframes check-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Ação em trânsito, do orquestrador para o especialista */
+.task-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  width: 92px;
+  padding: var(--space-2);
+  background: var(--paper-50);
+  color: var(--navy-800);
+  border-radius: var(--radius-sm);
+  font: 700 12px/14px var(--font-sans);
+  pointer-events: none;
+}
+.task-card__line {
+  display: block;
+  height: 3px;
+  margin-top: 4px;
+  background: var(--line-200);
+  border-radius: var(--radius-xs);
+}
+
+/* Agente no canto da tela */
+.agent-corner {
+  position: fixed;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: min(320px, calc(100vw - 32px));
+  padding: var(--space-3);
+  background: var(--navy-800);
+  color: var(--white-50);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-overlay);
+  font-family: var(--font-sans);
+}
+.agent-corner .desk-stage {
+  flex: none;
+  width: 118px;
+}
+@media (max-width: 767px) {
+  /* no celular fica no canto superior, para não cobrir o campo de resposta */
+  .agent-corner {
+    top: 156px;
+    right: var(--space-3);
+    bottom: auto;
+    width: 208px;
+    padding: var(--space-2);
+    gap: var(--space-2);
+  }
+  .agent-corner .desk-stage {
+    width: 72px;
+  }
+  .agent-corner__who,
+  .agent-corner__what {
+    font-size: 12px;
+    line-height: 16px;
+  }
+  .agent-corner__what {
+    margin-top: 0;
+  }
+}
+.agent-corner__who {
+  margin: 0;
+  font: 700 13px/16px var(--font-sans);
+}
+.agent-corner__what {
+  margin: var(--space-1) 0 0;
+  font: 500 13px/18px var(--font-sans);
+  color: var(--text-on-inverse-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .office *,
+  .agent-corner * {
+    animation: none !important;
+  }
+  .desk--working .art-line,
+  .desk--working .art-hand {
+    opacity: 1;
+  }
+  .desk--done .art-check {
+    opacity: 1;
+  }
+}

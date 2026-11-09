@@ -1,0 +1,116 @@
+/* Governo do Futuro · Plataforma — Design System — gerado a partir de tokens.json */
+:root {
+  --font-sans: Inter, Arial, sans-serif;
+  --navy-900: #07123a;
+  --navy-800: #0b1b52;
+  --navy-700: #13286e;
+  --blue-600: #2747c9;
+  --blue-400: #4f7bff;
+  --cyan-400: #3ed6f0;
+  --lime-400: #d8f23a;
+  --lime-500: #c5df2e;
+  --yellow-400: #f7c948;
+  --coral-400: #ff5c7a;
+  --paper-100: #f2f5ec;
+  --paper-50: #fbfcf7;
+  --line-200: #d6dccb;
+  --white-50: #f4f7ff;
+  --text-on-inverse: var(--white-50);
+  --text-on-inverse-muted: #c3d3f0;
+  --accent: var(--lime-400);
+  --accent-hover: var(--lime-500);
+  --on-accent: var(--navy-800);
+  --ia: var(--lime-400);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+  --control-sm: 32px;
+  --control-md: 40px;
+  --control-lg: 48px;
+  --topbar-height: 64px;
+  --sidenav-width: 264px;
+  --content-max: 1200px;
+  --icon-sm: 16px;
+  --icon-md: 20px;
+  --icon-lg: 24px;
+}
+
+:root,
+[data-theme='claro'] {
+  --bg: var(--paper-100);
+  --surface: var(--paper-50);
+  --surface-raised: var(--paper-50);
+  --surface-sunken: var(--paper-100);
+  --surface-inverse: var(--navy-800);
+  --border: var(--line-200);
+  --border-control: #7a869b;
+  --text: var(--navy-800);
+  --text-muted: #3a4766;
+  --text-subtle: #5b6785;
+  --text-disabled: #8b94a7;
+  --primary: var(--navy-800);
+  --primary-hover: var(--navy-700);
+  --on-primary: var(--white-50);
+  --link: var(--blue-600);
+  --focus: var(--blue-600);
+  --selected: #e4eafb;
+  --info: var(--blue-600);
+  --info-bg: #e4eafb;
+  --success: #0a716c;
+  --success-bg: #dcf2ef;
+  --warning: #8a5a00;
+  --warning-bg: #fdf1cf;
+  --danger: #c4163f;
+  --danger-bg: #fde6ec;
+  --on-danger: #fbfcf7;
+  --ia-bg: #f4fad2;
+  --overlay: rgba(7, 18, 58, 0.55);
+  --shadow-overlay: 0 12px 32px rgba(11, 27, 82, 0.18);
+  --shadow-focus: 0 0 0 2px #fbfcf7, 0 0 0 4px #2747c9;
+}
+
+[data-theme='escuro'] {
+  --bg: var(--navy-900);
+  --surface: var(--navy-800);
+  --surface-raised: var(--navy-700);
+  --surface-sunken: var(--navy-900);
+  --surface-inverse: var(--navy-700);
+  --border: var(--navy-700);
+  --border-control: #6f86c4;
+  --text: var(--white-50);
+  --text-muted: #c3d3f0;
+  --text-subtle: #8fa6d6;
+  --text-disabled: #5d6f9e;
+  --primary: var(--lime-400);
+  --primary-hover: var(--lime-500);
+  --on-primary: var(--navy-800);
+  --link: var(--cyan-400);
+  --focus: var(--cyan-400);
+  --selected: #102f6e;
+  --info: var(--cyan-400);
+  --info-bg: #102f6e;
+  --success: #5cd0c3;
+  --success-bg: #0e3a4c;
+  --warning: var(--yellow-400);
+  --warning-bg: #3a3324;
+  --danger: var(--coral-400);
+  --danger-bg: #3b1747;
+  --on-danger: var(--navy-800);
+  --ia-bg: #1a2f5c;
+  --overlay: rgba(2, 6, 20, 0.7);
+  --shadow-overlay: 0 12px 32px rgba(0, 0, 0, 0.5);
+  --shadow-focus: 0 0 0 2px #0b1b52, 0 0 0 4px #3ed6f0;
+}

@@ -1,0 +1,381 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: Inter, Arial, sans-serif;
+
+  /* classes do painel apontam para os tokens do design system */
+  --color-ink: var(--text);
+  --color-ink-2: var(--text-muted);
+  --color-ink-3: var(--text-subtle);
+  --color-paper: var(--surface);
+  --color-paper-2: var(--bg);
+  --color-paper-3: var(--selected);
+  --color-line: var(--border);
+  --color-line-2: var(--border-control);
+  --color-danger: var(--danger);
+  --color-ok: var(--success);
+
+  --ease-alpha: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  font-size: 15px;
+}
+
+::placeholder {
+  color: var(--color-ink-3);
+}
+
+*:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* dvh acompanha as barras do navegador do celular; vh deixa conteúdo cortado */
+.h-screen {
+  height: 100dvh;
+}
+.min-h-screen {
+  min-height: 100dvh;
+}
+
+@media (max-width: 767px) {
+  /* abaixo de 16px o iPhone dá zoom na página ao tocar no campo */
+  input:not([type='checkbox']):not([type='radio']),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+  input:not([type='checkbox']):not([type='radio']),
+  select,
+  main form button[type='submit'] {
+    min-height: 44px;
+  }
+  /* menu lateral do painel, aberto como gaveta */
+  aside button,
+  aside a[href] {
+    min-height: 40px;
+  }
+}
+
+/* Destaque de palavra: a marca do evento não usa degradê */
+.text-gradient-agents {
+  color: var(--link);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .text-gradient-agents {
+    animation: none;
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes gradient-slide {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 300% 50%;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-up {
+  animation: fade-up 0.35s var(--ease-alpha) both;
+}
+
+/* Varredura de luz para skeletons "carregando" (tela de montagem) */
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.skeleton-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgb(255 255 255 / 0.7) 50%,
+    transparent 80%
+  );
+  transform: translateX(-100%);
+  animation: skeleton-sweep 1.6s var(--ease-alpha) infinite;
+  animation-delay: var(--sweep-delay, 0s);
+}
+@keyframes skeleton-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer::after {
+    animation: none;
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+.animate-pulse-soft {
+  animation: pulse-soft 1.6s ease-in-out infinite;
+}
+
+/* Status de atividade — varredura de luz no texto ("pensando") */
+.text-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-ink-3) 0%,
+    var(--color-ink) 50%,
+    var(--color-ink-3) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer-slide 2s linear infinite;
+}
+@keyframes shimmer-slide {
+  from {
+    background-position: 200% 50%;
+  }
+  to {
+    background-position: -200% 50%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .text-shimmer {
+    animation: none;
+    background: none;
+    color: var(--color-ink-2);
+  }
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+/* cursor no fim do texto que está chegando (dentro do último bloco, não
+   numa linha solta depois dele) */
+.stream-caret > :last-child::after,
+.stream-caret > :is(ul, ol) > li:last-child::after {
+  content: '';
+  display: inline-block;
+  width: 2px;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: -0.15em;
+  background: var(--color-ink);
+  animation: blink 1s step-end infinite;
+}
+.stream-caret > :is(ul, ol):last-child::after {
+  content: none;
+}
+
+/* "trabalhando": três pontos em onda */
+.typing-dots {
+  display: inline-flex;
+  gap: 3px;
+  vertical-align: middle;
+}
+.typing-dots i {
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--color-ink-2);
+  animation: typing-dot 1.2s var(--ease-alpha) infinite;
+}
+.typing-dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.typing-dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes typing-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+/* anel que pulsa em volta do avatar de quem está trabalhando */
+.avatar-ring::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  border: 1.5px solid var(--color-ink);
+  animation: avatar-ring 1.4s var(--ease-alpha) infinite;
+  pointer-events: none;
+}
+@keyframes avatar-ring {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.3);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .typing-dots i,
+  .avatar-ring::before,
+  .stream-caret > :last-child::after {
+    animation: none;
+  }
+}
+
+/* Markdown no chat */
+.prose-chat {
+  line-height: 1.65;
+}
+.prose-chat p {
+  margin: 0.5em 0;
+}
+.prose-chat p:first-child {
+  margin-top: 0;
+}
+.prose-chat p:last-child {
+  margin-bottom: 0;
+}
+.prose-chat h1,
+.prose-chat h2,
+.prose-chat h3 {
+  font-weight: 600;
+  margin: 0.9em 0 0.4em;
+}
+.prose-chat h1 {
+  font-size: 1.2em;
+}
+.prose-chat h2 {
+  font-size: 1.1em;
+}
+.prose-chat h3 {
+  font-size: 1em;
+}
+.prose-chat ul,
+.prose-chat ol {
+  padding-left: 1.4em;
+  margin: 0.5em 0;
+}
+.prose-chat ul {
+  list-style: disc;
+}
+.prose-chat ol {
+  list-style: decimal;
+}
+.prose-chat code {
+  background: var(--color-paper-3);
+  border: 1px solid var(--color-line);
+  border-radius: 5px;
+  padding: 0.1em 0.35em;
+  font-size: 0.86em;
+  font-family: ui-monospace, monospace;
+}
+.prose-chat pre {
+  background: #18181b;
+  color: #fafafa;
+  border-radius: 10px;
+  padding: 0.9em 1.1em;
+  overflow-x: auto;
+  margin: 0.7em 0;
+  font-size: 0.86em;
+}
+.prose-chat pre code {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
+}
+.prose-chat a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose-chat blockquote {
+  border-left: 3px solid var(--color-line-2);
+  padding-left: 0.9em;
+  color: var(--color-ink-2);
+  margin: 0.6em 0;
+}
+.prose-chat table {
+  border-collapse: collapse;
+  margin: 0.7em 0;
+  font-size: 0.92em;
+}
+.prose-chat th,
+.prose-chat td {
+  border: 1px solid var(--color-line);
+  padding: 0.35em 0.7em;
+}
+
+/* Scrollbar fina (colunas do kanban, listas longas) */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-2) transparent;
+}
+.scroll-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: var(--color-line-2);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.scroll-thin::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink-3);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

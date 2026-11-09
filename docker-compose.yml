@@ -1,0 +1,11 @@
+# aao-web — deploy no EasyPanel (projeto compose)
+services:
+  web:
+    build:
+      context: .
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_RELEASES_MANIFEST_URL: ${VITE_RELEASES_MANIFEST_URL}
+    restart: unless-stopped
+    ports:
+      - "80"
